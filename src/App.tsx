@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useAnimationControls } from "motion/react";
 
 // ── Types ──
 interface Mood {
@@ -235,6 +235,31 @@ function MoodCell({
 }) {
   const delay = (globalRow + globalCol) * 0.025;
   const [shimmer, setShimmer] = useState(false);
+  const controls = useAnimationControls();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      controls.start({
+        opacity: 1,
+        scale: isSelected ? 1.04 : 1,
+        transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+      });
+    }, delay * 1000);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    controls.start({ scale: isSelected ? 1.04 : 1, transition: { duration: 0.15 } });
+  }, [isSelected]);
+
+  const triggerSway = () => {
+    setShimmer(true);
+    controls.set({ rotate: -2.5 });
+    controls.start({
+      rotate: 0,
+      transition: { type: "spring", stiffness: 250, damping: 6, mass: 0.4 },
+    });
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -250,8 +275,8 @@ function MoodCell({
       aria-label={`${mood.ko} (${mood.en})`}
       onClick={onSelect}
       onKeyDown={handleKeyDown}
-      onMouseEnter={() => setShimmer(true)}
-      onFocus={() => setShimmer(true)}
+      onMouseEnter={triggerSway}
+      onFocus={triggerSway}
       className={`mood-cell${isSelected ? " selected" : ""}${shimmer ? " shimmer" : ""}`}
       onAnimationEnd={() => setShimmer(false)}
       style={{
@@ -265,18 +290,9 @@ function MoodCell({
           : {}),
       }}
       initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: isSelected ? 1.04 : 1 }}
-      transition={{ delay, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{
-        scale: 1.03,
-        rotate: [0, -1.5, 1.2, -0.8, 0.4, 0],
-        transition: { scale: { duration: 0.15, delay: 0 }, rotate: { duration: 1.2, ease: "easeOut", delay: 0 } },
-      }}
-      whileFocus={{
-        scale: 1.03,
-        rotate: [0, -1.5, 1.2, -0.8, 0.4, 0],
-        transition: { scale: { duration: 0.15, delay: 0 }, rotate: { duration: 1.2, ease: "easeOut", delay: 0 } },
-      }}
+      animate={controls}
+      whileHover={{ scale: 1.03, transition: { duration: 0.15, delay: 0 } }}
+      whileFocus={{ scale: 1.03, transition: { duration: 0.15, delay: 0 } }}
       whileTap={{ scale: 0.98, transition: { duration: 0.1, delay: 0 } }}
     >
       <span className="cell-ko">{mood.ko}</span>
