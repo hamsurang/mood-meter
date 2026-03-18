@@ -596,9 +596,9 @@ export default function MoodMeter() {
         .y-label {
           transform: rotate(-90deg);
           white-space: nowrap;
-          font-size: 0.8rem;
-          color: var(--text-tertiary);
-          font-weight: 400;
+          font-size: 0.95rem;
+          color: var(--text-secondary);
+          font-weight: 500;
         }
 
         .grid-scroll {
@@ -693,9 +693,9 @@ export default function MoodMeter() {
         .x-axis-labels {
           display: flex;
           padding: 14px 0 0;
-          font-size: 0.8rem;
-          color: var(--text-tertiary);
-          font-weight: 400;
+          font-size: 0.95rem;
+          color: var(--text-secondary);
+          font-weight: 500;
         }
 
         .x-axis-labels span {
