@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
-import { motion, AnimatePresence, useAnimationControls } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 
 // ── Types ──
 interface Mood {
@@ -235,21 +235,6 @@ function MoodCell({
 }) {
   const delay = (globalRow + globalCol) * 0.025;
   const [shimmer, setShimmer] = useState(false);
-  const swayControls = useAnimationControls();
-  const swaying = useRef(false);
-
-  const triggerSway = () => {
-    if (swaying.current) return;
-    swaying.current = true;
-    setShimmer(true);
-    swayControls.set({ rotate: -1.8 });
-    swayControls.start({
-      rotate: 0,
-      transition: { type: "spring", stiffness: 120, damping: 8, mass: 0.6 },
-    }).then(() => {
-      swaying.current = false;
-    });
-  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -260,36 +245,31 @@ function MoodCell({
 
   return (
     <motion.div
-      style={{ transformOrigin: "top center" }}
-      animate={swayControls}
+      role="button"
+      tabIndex={0}
+      aria-label={`${mood.ko} (${mood.en})`}
+      onClick={onSelect}
+      onKeyDown={handleKeyDown}
+      onMouseEnter={() => setShimmer(true)}
+      onFocus={() => setShimmer(true)}
+      className={`mood-cell${isSelected ? " selected" : ""}${shimmer ? " shimmer" : ""}`}
+      onAnimationEnd={() => setShimmer(false)}
+      style={{
+        background: color.css,
+        ...(isSelected
+          ? {
+              boxShadow: "0 0 0 2px #fff, 0 4px 20px rgba(0,0,0,0.3)",
+              zIndex: 11,
+            }
+          : {}),
+      }}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: isSelected ? 1.04 : 1 }}
+      transition={{ delay, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      whileTap={{ scale: 0.97, transition: { duration: 0.1, delay: 0 } }}
     >
-      <motion.div
-        role="button"
-        tabIndex={0}
-        aria-label={`${mood.ko} (${mood.en})`}
-        onClick={onSelect}
-        onKeyDown={handleKeyDown}
-        onMouseEnter={triggerSway}
-        onFocus={triggerSway}
-        className={`mood-cell${isSelected ? " selected" : ""}${shimmer ? " shimmer" : ""}`}
-        onAnimationEnd={() => setShimmer(false)}
-        style={{
-          background: color.css,
-          ...(isSelected
-            ? {
-                boxShadow: "0 0 0 2px #fff, 0 4px 20px rgba(0,0,0,0.3)",
-                zIndex: 11,
-              }
-            : {}),
-        }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: isSelected ? 1.04 : 1 }}
-        transition={{ delay, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        whileTap={{ scale: 0.97, transition: { duration: 0.1, delay: 0 } }}
-      >
-        <span className="cell-ko">{mood.ko}</span>
-        <span className="cell-en">{mood.en}</span>
-      </motion.div>
+      <span className="cell-ko">{mood.ko}</span>
+      <span className="cell-en">{mood.en}</span>
     </motion.div>
   );
 }
