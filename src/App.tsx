@@ -236,13 +236,18 @@ function MoodCell({
   const delay = (globalRow + globalCol) * 0.025;
   const [shimmer, setShimmer] = useState(false);
   const swayControls = useAnimationControls();
+  const swaying = useRef(false);
 
   const triggerSway = () => {
+    if (swaying.current) return;
+    swaying.current = true;
     setShimmer(true);
-    swayControls.set({ rotate: -2.5 });
+    swayControls.set({ rotate: -1.8 });
     swayControls.start({
       rotate: 0,
-      transition: { type: "spring", stiffness: 250, damping: 6, mass: 0.4 },
+      transition: { type: "spring", stiffness: 120, damping: 8, mass: 0.6 },
+    }).then(() => {
+      swaying.current = false;
     });
   };
 
