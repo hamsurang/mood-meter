@@ -401,14 +401,19 @@ function NotePanel({ mood, color, onClose }: { mood: Mood; color: CellColor; onC
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.25 }}
+      transition={{ duration: 0.2 }}
     >
       <motion.div
         className="note-panel"
-        initial={{ opacity: 0, y: 30, scale: 0.97 }}
+        initial={{ opacity: 0, y: 40, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 30, scale: 0.95 }}
-        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 25,
+          mass: 0.8,
+        }}
       >
         <motion.div
           className="note-card-preview"
@@ -493,6 +498,10 @@ function NotePanel({ mood, color, onClose }: { mood: Mood; color: CellColor; onC
 export default function MoodMeter() {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [panelData, setPanelData] = useState<{ mood: Mood; color: CellColor } | null>(null);
+  const [showPanel, setShowPanel] = useState(false);
+  const lastPanelData = useRef<{ mood: Mood; color: CellColor } | null>(null);
+
+  if (panelData) lastPanelData.current = panelData;
 
   const cellColors = useMemo(() => {
     const map: Record<string, CellColor> = {};
@@ -510,11 +519,12 @@ export default function MoodMeter() {
     const key = `${quad}-${r}-${c}`;
     setSelectedKey(key);
     setPanelData({ mood, color: cellColors[key] });
+    setShowPanel(true);
   };
 
   const handleClosePanel = () => {
     setSelectedKey(null);
-    setPanelData(null);
+    setShowPanel(false);
   };
 
   return (
@@ -978,8 +988,10 @@ export default function MoodMeter() {
           </div>
         </div>
 
-        <AnimatePresence>
-          {panelData && <NotePanel key="note-panel" mood={panelData.mood} color={panelData.color} onClose={handleClosePanel} />}
+        <AnimatePresence onExitComplete={() => setPanelData(null)}>
+          {showPanel && lastPanelData.current && (
+            <NotePanel key="note-panel" mood={lastPanelData.current.mood} color={lastPanelData.current.color} onClose={handleClosePanel} />
+          )}
         </AnimatePresence>
       </div>
     </>
