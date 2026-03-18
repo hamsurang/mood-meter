@@ -234,6 +234,7 @@ function MoodCell({
   onSelect: () => void;
 }) {
   const delay = (globalRow + globalCol) * 0.025;
+  const [shimmer, setShimmer] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -249,9 +250,13 @@ function MoodCell({
       aria-label={`${mood.ko} (${mood.en})`}
       onClick={onSelect}
       onKeyDown={handleKeyDown}
-      className={`mood-cell${isSelected ? " selected" : ""}`}
+      onMouseEnter={() => setShimmer(true)}
+      onFocus={() => setShimmer(true)}
+      className={`mood-cell${isSelected ? " selected" : ""}${shimmer ? " shimmer" : ""}`}
+      onAnimationEnd={() => setShimmer(false)}
       style={{
         background: color.css,
+        transformOrigin: "top center",
         ...(isSelected
           ? {
               boxShadow: "0 0 0 2px #fff, 0 4px 20px rgba(0,0,0,0.3)",
@@ -262,8 +267,16 @@ function MoodCell({
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: isSelected ? 1.04 : 1 }}
       transition={{ delay, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ scale: 1.03, transition: { duration: 0.15, delay: 0 } }}
-      whileFocus={{ scale: 1.03, transition: { duration: 0.15, delay: 0 } }}
+      whileHover={{
+        scale: 1.03,
+        rotate: [0, -1.5, 1.2, -0.8, 0.4, 0],
+        transition: { scale: { duration: 0.15, delay: 0 }, rotate: { duration: 1.2, ease: "easeOut", delay: 0 } },
+      }}
+      whileFocus={{
+        scale: 1.03,
+        rotate: [0, -1.5, 1.2, -0.8, 0.4, 0],
+        transition: { scale: { duration: 0.15, delay: 0 }, rotate: { duration: 1.2, ease: "easeOut", delay: 0 } },
+      }}
       whileTap={{ scale: 0.98, transition: { duration: 0.1, delay: 0 } }}
     >
       <span className="cell-ko">{mood.ko}</span>
@@ -640,8 +653,7 @@ export default function MoodMeter() {
           pointer-events: none;
         }
 
-        .mood-cell:hover::after,
-        .mood-cell:focus-visible::after {
+        .mood-cell.shimmer::after {
           animation: shimmer 1.5s ease forwards;
         }
 
