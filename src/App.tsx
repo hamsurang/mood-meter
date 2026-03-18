@@ -235,9 +235,20 @@ function MoodCell({
 }) {
   const delay = (globalRow + globalCol) * 0.025;
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onSelect();
+    }
+  };
+
   return (
     <motion.div
+      role="button"
+      tabIndex={0}
+      aria-label={`${mood.ko} (${mood.en})`}
       onClick={onSelect}
+      onKeyDown={handleKeyDown}
       className={`mood-cell${isSelected ? " selected" : ""}`}
       style={{
         background: color.css,
@@ -252,6 +263,7 @@ function MoodCell({
       animate={{ opacity: 1, scale: isSelected ? 1.04 : 1 }}
       transition={{ delay, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ scale: 1.03, transition: { duration: 0.15, delay: 0 } }}
+      whileFocus={{ scale: 1.03, transition: { duration: 0.15, delay: 0 } }}
       whileTap={{ scale: 0.98, transition: { duration: 0.1, delay: 0 } }}
     >
       <span className="cell-ko">{mood.ko}</span>
@@ -289,6 +301,14 @@ function NotePanel({ mood, color, onClose }: { mood: Mood; color: CellColor; onC
     const t = setTimeout(() => inputRef.current?.focus(), 200);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [onClose]);
 
   const handleCopy = useCallback(async () => {
     setCopyState("copying");
@@ -351,6 +371,9 @@ function NotePanel({ mood, color, onClose }: { mood: Mood; color: CellColor; onC
 
   return (
     <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${mood.ko} 감정 카드`}
       className="note-overlay"
       onClick={(e) => e.target === e.currentTarget && onClose()}
       initial={{ opacity: 0 }}
@@ -617,8 +640,14 @@ export default function MoodMeter() {
           pointer-events: none;
         }
 
-        .mood-cell:hover::after {
-          animation: shimmer 1s ease forwards;
+        .mood-cell:hover::after,
+        .mood-cell:focus-visible::after {
+          animation: shimmer 1.5s ease forwards;
+        }
+
+        .mood-cell:focus-visible {
+          outline: none;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 0 2px var(--accent-blue);
         }
 
         @keyframes shimmer {
