@@ -235,27 +235,12 @@ function MoodCell({
 }) {
   const delay = (globalRow + globalCol) * 0.025;
   const [shimmer, setShimmer] = useState(false);
-  const controls = useAnimationControls();
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      controls.start({
-        opacity: 1,
-        scale: isSelected ? 1.04 : 1,
-        transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
-      });
-    }, delay * 1000);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  useEffect(() => {
-    controls.start({ scale: isSelected ? 1.04 : 1, transition: { duration: 0.15 } });
-  }, [isSelected]);
+  const swayControls = useAnimationControls();
 
   const triggerSway = () => {
     setShimmer(true);
-    controls.set({ rotate: -2.5 });
-    controls.start({
+    swayControls.set({ rotate: -2.5 });
+    swayControls.start({
       rotate: 0,
       transition: { type: "spring", stiffness: 250, damping: 6, mass: 0.4 },
     });
@@ -270,33 +255,36 @@ function MoodCell({
 
   return (
     <motion.div
-      role="button"
-      tabIndex={0}
-      aria-label={`${mood.ko} (${mood.en})`}
-      onClick={onSelect}
-      onKeyDown={handleKeyDown}
-      onMouseEnter={triggerSway}
-      onFocus={triggerSway}
-      className={`mood-cell${isSelected ? " selected" : ""}${shimmer ? " shimmer" : ""}`}
-      onAnimationEnd={() => setShimmer(false)}
-      style={{
-        background: color.css,
-        transformOrigin: "top center",
-        ...(isSelected
-          ? {
-              boxShadow: "0 0 0 2px #fff, 0 4px 20px rgba(0,0,0,0.3)",
-              zIndex: 11,
-            }
-          : {}),
-      }}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={controls}
-      whileHover={{ scale: 1.03, transition: { duration: 0.15, delay: 0 } }}
-      whileFocus={{ scale: 1.03, transition: { duration: 0.15, delay: 0 } }}
-      whileTap={{ scale: 0.98, transition: { duration: 0.1, delay: 0 } }}
+      style={{ transformOrigin: "top center" }}
+      animate={swayControls}
     >
-      <span className="cell-ko">{mood.ko}</span>
-      <span className="cell-en">{mood.en}</span>
+      <motion.div
+        role="button"
+        tabIndex={0}
+        aria-label={`${mood.ko} (${mood.en})`}
+        onClick={onSelect}
+        onKeyDown={handleKeyDown}
+        onMouseEnter={triggerSway}
+        onFocus={triggerSway}
+        className={`mood-cell${isSelected ? " selected" : ""}${shimmer ? " shimmer" : ""}`}
+        onAnimationEnd={() => setShimmer(false)}
+        style={{
+          background: color.css,
+          ...(isSelected
+            ? {
+                boxShadow: "0 0 0 2px #fff, 0 4px 20px rgba(0,0,0,0.3)",
+                zIndex: 11,
+              }
+            : {}),
+        }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: isSelected ? 1.04 : 1 }}
+        transition={{ delay, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        whileTap={{ scale: 0.97, transition: { duration: 0.1, delay: 0 } }}
+      >
+        <span className="cell-ko">{mood.ko}</span>
+        <span className="cell-en">{mood.en}</span>
+      </motion.div>
     </motion.div>
   );
 }
