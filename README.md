@@ -6,6 +6,8 @@
 
 지금 내 기분은 어디쯤일까? [무드미터로 찾아보세요.](https://hamsurang.github.io/mood-meter/)
 
+<video src="https://hamsurang.github.io/mood-meter/DEMO.mp4" autoplay loop muted playsinline width="100%"></video>
+
 ---
 
 ## 무드미터가 뭐예요?
